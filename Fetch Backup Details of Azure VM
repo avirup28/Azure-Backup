@@ -1,1 +1,7 @@
-
+Get-AzureRmRecoveryServicesVault -Name "<NameoftheVault>" -ResourceGroupName "<NameoftheRG>" | Set-AzureRmRecoveryServicesVaultContext
+$fnames = Get-AzureRmRecoveryServicesBackupContainer -ContainerType "AzureVM" -Status "Registered" | select  -ExpandProperty friendlyname
+foreach ($name in $fnames)
+ {
+ $nameContainer = Get-AzureRmRecoveryServicesBackupContainer -ContainerType "AzureVM" -Status "Registered" -FriendlyName $name
+ Get-AzureRmRecoveryServicesBackupItem -Container $nameContainer -WorkloadType "AzureVM" | select ContainerName,LatestRecoveryPoint
+ }
