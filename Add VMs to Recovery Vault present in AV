@@ -1,0 +1,25 @@
+$RG= (Get-AzureRmResourceGroup).ResourceGroupName
+$asets = Get-AzureRmAvailabilitySet -ResourceGroupName $RG
+foreach($aset in $asets)
+{
+$AVVMID =(Get-AzureRmAvailabilitySet -Name $aset.Name -ResourceGroupName $RG).VirtualMachinesReferences.Id
+$option = [System.StringSplitOptions]::RemoveEmptyEntries
+$seperator = "/"
+$AVVMIDNAME= $AVVMID.Split("$seperator") | Select-Object -Unique |Select-Object -Index 8,9,10,11,12,13,14
+$array = @($AVVMIDNAME)
+
+for ($i=0; $i -lt $array.length; $i++)
+{
+Get-AzureRmRecoveryServicesVault -Name "Testforbackupautomation" | Set-AzureRmRecoveryServicesVaultContext
+$policy = Get-AzureRmRecoveryServicesBackupProtectionPolicy -Name "test1"
+Enable-AzureRmRecoveryServicesBackupProtection -ResourceGroupName $RG -Name $array[0] -Policy $policy
+Get-AzureRmRecoveryServicesVault -Name "Testforbackupautomation" | Set-AzureRmRecoveryServicesVaultContext
+$policy2 = Get-AzureRmRecoveryServicesBackupProtectionPolicy -Name "test3"
+Enable-AzureRmRecoveryServicesBackupProtection -ResourceGroupName $RG -Name $array[1] -Policy $policy2
+Write-Host "$array[$i]"
+Get-AzureRmRecoveryServicesVault -Name "Testforbackupautomation" | Set-AzureRmRecoveryServicesVaultContext
+$policy1 = Get-AzureRmRecoveryServicesBackupProtectionPolicy -Name "test2"
+Enable-AzureRmRecoveryServicesBackupProtection -ResourceGroupName $RG -Name $array[2] -Policy $policy1
+Write-Host "$array[$i]"
+}
+} 
