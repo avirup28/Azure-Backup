@@ -1,0 +1,31 @@
+function XXX {
+try {
+$VMs=Get-AzVm -Status | Where-Object {($PSItem.Tags.Keys -eq "Technical_Agency" -and $PSItem.Tags.Values -eq "XXX") -and ($PSItem.Tags.Keys -eq "Stage" -and $PSItem.Tags.Values -eq "PROD")} 
+Get-AzRecoveryServicesVault -Name <VaultName> | Set-AzRecoveryServicesVaultContext
+$BVMs=(Get-AzRecoveryServicesBackupContainer -ContainerType AzureVM).FriendlyName
+foreach($VM in $VMs)
+{
+$N = $VM.Name
+$RG = $VM.ResourceGroupName
+if ($BVMs -notcontains $N)
+{
+
+$policy = Get-AzRecoveryServicesBackupProtectionPolicy -Name "D21-M3-EU"
+
+Enable-AzRecoveryServicesBackupProtection -ResourceGroupName $RG -Name $N -Policy $policy
+
+$backupcontainer = Get-AzRecoveryServicesBackupContainer -ContainerType "AzureVM" -FriendlyName "$N" -Status Registered
+
+$item = Get-AzRecoveryServicesBackupItem -Container $backupcontainer -WorkloadType "AzureVM"
+
+Backup-AzRecoveryServicesBackupItem -Item $item
+}}}
+
+catch {$_.Exception.Message}
+
+                }
+
+$Hour = (Get-Date).Hour
+
+
+if ($Hour -eq "12") { XXX }
